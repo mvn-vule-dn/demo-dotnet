@@ -190,4 +190,20 @@ public class UserController : ControllerBase
             data = new { email = user.Email}
         });
     }
+
+    [HttpPut]
+    [Route("change_password")]
+    public IActionResult ChangePassword(string password, string accessToken){
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(accessToken);
+        var username = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;
+
+        if (username == null) return BadRequest(new { description = "accessToken is invalid"});
+
+        var user = this._DBContext.Users.FirstOrDefault(o => o.Username == username);
+        user.Password = password;
+        this._DBContext.SaveChanges();
+
+        return Ok();
+    }
 }
